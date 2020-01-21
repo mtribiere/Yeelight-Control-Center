@@ -1,5 +1,5 @@
 # Yeelight-Control-Center
-A very simple and ugly (but working) program to control your Yeelight bulb created with Python3
+A very simple (but working) program to control your Yeelight bulb created with Python3 and GTK
 
 # How to launch
 ```
