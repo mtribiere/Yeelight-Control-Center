@@ -1,6 +1,7 @@
 # !/usr/bin/python3
 
 import socket
+import json
 import sys
 
 class Bulb:
@@ -51,26 +52,62 @@ class Bulb:
 
 		#Listen the response
 		maxSize = 50000;
-		chunks = []
+		chunks = ""
 		bytes_recd = 0
 		needStop = 0
+		chunk = b''
 		while not(needStop):
-			chunk = self.bulb.recv(2048)
-			if chunk == b'':
-				raise RuntimeError("Connection Error")
-			if b'\n' in chunk:
-				needStop = 1
-			chunks.append(chunk)
+			
+			chunk = self.bulb.recv(1)
+			chunks += (str(chunk,'utf-8'))
 			bytes_recd = bytes_recd+len(chunk)
+
+			if (chunk == b''):
+				raise RuntimeError("Connection Error")
+			
+			if ('\n' in chunks):
+
+				#Ignore notification messages
+				if not("props" in chunks):
+					needStop = 1
+				else:
+					chunk = b''
+					chunks = ""
+					bytes_recd = 0	
 		
-		print(str(chunks))
+
+		# Return the command result
+		print(chunks)
+		result = json.loads(chunks)["result"]
+		return result
+
+	def getCurrentState(self):
+		result = self.sendCommandToBulb("1","get_prop",["power","rgb"])
+		return result[0],result[1]
 
 	def turnOff(self):
-		self.sendCommandToBulb("1","set_power",["off","smooth",500])
-
+		toReturn = 1
+		if(self.sendCommandToBulb("1","set_power",["off","smooth",500])[0] == "ok"):
+			toReturn = 0
+		
+		return toReturn
 
 	def turnOn(self):
-		self.sendCommandToBulb("1","set_power",["on","smooth",500])
+		toReturn = 1
+		if(self.sendCommandToBulb("1","set_power",["on","smooth",500])[0] == "ok"):
+			toReturn = 0
+
+		return toReturn
 
 	def adjustBrightness(self,brightness):
 		self.sendCommandToBulb("1","set_bright",[int(brightness),"smooth",500])
+	
+	def adjustTemperature(self,temperature):
+		self.sendCommandToBulb("1","set_ct_abx",[int(temperature),"smooth",500])
+	
+	def setColor(self,r,g,b):
+		colorToSend = (65536*r) + (256*g) + b
+		print(colorToSend)
+		self.sendCommandToBulb("1","set_rgb",[colorToSend,"smooth",500])
+
+
