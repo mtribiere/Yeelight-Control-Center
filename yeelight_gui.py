@@ -3,6 +3,7 @@ import gi
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
 from yeelight_lib import Bulb
+from setting_dialog import SettingDialog
 
 class Application(Gtk.Window):
 
@@ -92,6 +93,7 @@ class Application(Gtk.Window):
 		self.imageSetting.set_from_file("img/setting.png")
 		self.ButtonSetting.set_property("image",self.imageSetting)
 		self.ButtonSetting.set_property("always-show-image",True)
+		self.ButtonSetting.connect("clicked",self.openSettings)
 
 		self.botBox.pack_start(self.ButtonSetting,False,True,0)
 
@@ -111,21 +113,35 @@ class Application(Gtk.Window):
 	
 	def chooseColor(self,widget):
 
-		# Préparer la boite de dialogue
+		#Prepare dialogBox
 		self.dialog = Gtk.ColorChooserDialog(title="Choose a new color",parent=self)
-		#self.dialog.set_property("show-editor",True)
 		self.dialogResponse = self.dialog.run()
 		newColor = self.dialog.get_rgba()
 
-		# Traiter la réponse
+		#Handle response
 		if(self.dialogResponse == Gtk.ResponseType.OK):
 			print("New color : "+str(newColor))
 			self.bulb.setColor(int(newColor.red*255),int(newColor.green*255),int(newColor.blue*255))
 		else:
 			print("Abord")
 
-		#Détruire la boite de dialogue
+		#Close the dialog
 		self.dialog.destroy()
+
+	def openSettings(self,widget):
+		
+		#Prepare dialogBox
+		settingDialog = SettingDialog(self)
+		settingDialogResponse = settingDialog.run()
+		
+		#Handle the response
+		if(settingDialogResponse == Gtk.ResponseType.OK):
+			print("Changing IP to : "+settingDialog.getIp())
+		else:
+			print("Canceled")
+
+		#Destroy the dialog
+		settingDialog.destroy()
 
 	def disconnect(self):
 		print("Disconnecting from bulb....")
