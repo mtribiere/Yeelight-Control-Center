@@ -4,6 +4,7 @@ gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
 from yeelight_lib import Bulb
 from setting_dialog import SettingDialog
+import JSONutils as configFile
 
 class Application(Gtk.Window):
 
@@ -11,15 +12,16 @@ class Application(Gtk.Window):
 		Gtk.Window.__init__(self,title="Yeelight Control Center")
 
 		#Setup bulb
-		self.bulb = Bulb("192.168.43.53",55443)
-		print("Connecting to bulb....",end='')
-		#self.bulb.connect()
-		print("OK !")
-		#self.bulb.getCurrentState()
+		config = configFile.loadConfig()
+		self.createBulb(config["ipAddress"],config["transitionType"])
 
 		#Setup GUI
 		self.set_icon_from_file("img/logo.ico")
 		self.create_widgets()
+
+		#Connect to bulb
+		self.connectToBulb()
+
 
 	def create_widgets(self):
 
@@ -131,17 +133,61 @@ class Application(Gtk.Window):
 	def openSettings(self,widget):
 		
 		#Prepare dialogBox
-		settingDialog = SettingDialog(self)
+		settingDialog = SettingDialog(self,self.bulb.getCurrentIp(),self.bulb.getCurrentTransitionType())
 		settingDialogResponse = settingDialog.run()
 		
 		#Handle the response
 		if(settingDialogResponse == Gtk.ResponseType.OK):
-			print("Changing IP to : "+settingDialog.getIp())
+			print("Interrupting communactions")
+			#Get the new transition
+			if(settingDialog.getTransitionType() == 0):
+				newTransitionType = "sudden"
+			else:
+				newTransitionType = "smooth"
+
+			#Write the config
+			configFile.saveConfig(settingDialog.getIp(),newTransitionType)
+
+			#Create new Bulb
+			self.bulb.disconnect()
+			self.createBulb(settingDialog.getIp(),newTransitionType)
+
+			#Connect to bulb
+			self.connectToBulb()
+
 		else:
 			print("Canceled")
 
 		#Destroy the dialog
 		settingDialog.destroy()
+	
+	def createBulb(self,ipAdress,transitionType):
+		self.bulb = Bulb(ipAdress,55443,transitionType)
+	
+	def connectToBulb(self):
+
+		print("Connecting to bulb....",end='')
+		#If an error occured
+		if(self.bulb.connect() == 1):
+			#Create the dialog
+			errorDialog = Gtk.MessageDialog(parent=self,
+											flags=0,
+											message_type=Gtk.MessageType.ERROR,
+											buttons=Gtk.ButtonsType.OK)
+			errorDialog.set_property("text","Connection error")
+			errorDialog.format_secondary_text("A connection error occured when trying to connect to the bulb.\nPlease double-check its IP address and make sure the device is online.")
+			errorDialog.run()
+
+			#Destroy the dialog
+			errorDialog.destroy()
+		else:
+			self.updateCursors()
+			print("OK !")
+	
+	def updateCursors(self):
+		currentState = self.bulb.getCurrentState()
+		self.BrightnessSlider.set_value(int(currentState[1]))
+		self.TemperatureSlider.set_value(int(currentState[3]))
 
 	def disconnect(self):
 		print("Disconnecting from bulb....")

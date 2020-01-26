@@ -4,7 +4,7 @@ from gi.repository import Gtk
 
 class SettingDialog(Gtk.Dialog):
 
-	def __init__(self,parent):
+	def __init__(self,parent,currentIp,currentTransitionType):
 		Gtk.Dialog.__init__(self,"Settings",
 								parent,
 								0)
@@ -13,6 +13,13 @@ class SettingDialog(Gtk.Dialog):
 		self.createWidget()
 		self.createButtons()
 
+		#Fill informations
+		self.ipEntery.set_text(currentIp)
+		if(currentTransitionType == "sudden"):
+			self.transitionTypeCombo.set_active(0)
+		else:
+			self.transitionTypeCombo.set_active(1)
+		
 		self.show_all()
 
 	def createWidget(self):
@@ -67,3 +74,6 @@ class SettingDialog(Gtk.Dialog):
 	
 	def getIp(self):
 		return self.ipEntery.get_text()
+	
+	def getTransitionType(self):
+		return self.transitionTypeCombo.get_active()

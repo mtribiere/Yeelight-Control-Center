@@ -6,15 +6,34 @@ import sys
 
 class Bulb:
 
-	def __init__(self,ip,port):
+	def __init__(self,ip,port,transitionType):
+		#Get the parameters
 		self.ipAddress = (ip,port);
+		self.transitionType = transitionType
+		
+		#Configure the client
 		self.bulb = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+		self.bulb.settimeout(2)
+
+		#Setup variable
+		self.isConnected = 0
 
 	def connect(self):
-		self.bulb.connect(self.ipAddress)
-	
+		toReturn = 0
+		
+		try:
+			self.bulb.connect(self.ipAddress)
+			self.isConnected = 1
+		except:
+			print("Connection Error")
+			toReturn = 1
+			self.isConnected = 0
+
+		return toReturn
+
 	def disconnect(self):
 		self.bulb.close()
+		self.isConnected = 0
 
 	def createCommand(self,id,method,params):
 
@@ -42,6 +61,10 @@ class Bulb:
 		return toReturn
 
 	def sendCommandToBulb(self,id,method,params):
+
+		#Check the bulb is connected
+		if(self.isConnected == 0):
+			return "fail"
 		
 		#Create the command
 		toSend = self.createCommand(id,method,params)
@@ -77,37 +100,41 @@ class Bulb:
 		
 
 		# Return the command result
-		print(chunks)
+		#print(chunks)
 		result = json.loads(chunks)["result"]
 		return result
 
 	def getCurrentState(self):
-		result = self.sendCommandToBulb("1","get_prop",["power","rgb"])
-		return result[0],result[1]
+		result = self.sendCommandToBulb("1","get_prop",["power","bright","rgb","ct"])
+		return result
 
 	def turnOff(self):
 		toReturn = 1
-		if(self.sendCommandToBulb("1","set_power",["off","smooth",500])[0] == "ok"):
+		if(self.sendCommandToBulb("1","set_power",["off",self.transitionType,500])[0] == "ok"):
 			toReturn = 0
 		
 		return toReturn
 
 	def turnOn(self):
 		toReturn = 1
-		if(self.sendCommandToBulb("1","set_power",["on","smooth",500])[0] == "ok"):
+		if(self.sendCommandToBulb("1","set_power",["on",self.transitionType,500])[0] == "ok"):
 			toReturn = 0
 
 		return toReturn
 
 	def adjustBrightness(self,brightness):
-		self.sendCommandToBulb("1","set_bright",[int(brightness),"smooth",500])
+		self.sendCommandToBulb("1","set_bright",[int(brightness),self.transitionType,500])
 	
 	def adjustTemperature(self,temperature):
-		self.sendCommandToBulb("1","set_ct_abx",[int(temperature),"smooth",500])
+		self.sendCommandToBulb("1","set_ct_abx",[int(temperature),self.transitionType,500])
 	
 	def setColor(self,r,g,b):
 		colorToSend = (65536*r) + (256*g) + b
 		print(colorToSend)
-		self.sendCommandToBulb("1","set_rgb",[colorToSend,"smooth",500])
+		self.sendCommandToBulb("1","set_rgb",[colorToSend,self.transitionType,500])
 
-
+	def getCurrentIp(self):
+		return self.ipAddress[0]
+	
+	def getCurrentTransitionType(self):
+		return self.transitionType;
