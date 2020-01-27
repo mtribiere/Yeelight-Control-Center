@@ -1,11 +1,12 @@
 import json
 
-def saveConfig(ipAddress,transitionType):
+def saveConfig(ipAddress,transitionType,transitionTime):
 	
 	#Create the obect to store
 	dictionnary = {
 		"ipAddress" : ipAddress,
-		"transitionType" : transitionType
+		"transitionType" : transitionType,
+		"transitionTime" : transitionTime
 	}
 
 	jsonParsed = json.dumps(dictionnary,indent=4)
@@ -19,5 +20,14 @@ def loadConfig():
 	#Read the file
 	with open("config/config.cfg",'r') as configFile:
 		dictionnary = json.load(configFile)
+	
+	return dictionnary
+
+
+def loadTheme():
+
+	#Read the file
+	with open("config/themes.cfg",'r') as themeFile:
+		dictionnary = json.load(themeFile)
 	
 	return dictionnary

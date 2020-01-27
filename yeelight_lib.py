@@ -6,11 +6,12 @@ import sys
 
 class Bulb:
 
-	def __init__(self,ip,port,transitionType):
+	def __init__(self,ip,port,transitionType,transitionTime):
 		#Get the parameters
 		self.ipAddress = (ip,port);
 		self.transitionType = transitionType
-		
+		self.transitionTime = transitionTime
+
 		#Configure the client
 		self.bulb = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
 		self.bulb.settimeout(2)
@@ -100,7 +101,7 @@ class Bulb:
 		
 
 		# Return the command result
-		#print(chunks)
+		print(chunks)
 		result = json.loads(chunks)["result"]
 		return result
 
@@ -110,31 +111,33 @@ class Bulb:
 
 	def turnOff(self):
 		toReturn = 1
-		if(self.sendCommandToBulb("1","set_power",["off",self.transitionType,500])[0] == "ok"):
+		if(self.sendCommandToBulb("1","set_power",["off",self.transitionType,self.transitionTime])[0] == "ok"):
 			toReturn = 0
 		
 		return toReturn
 
 	def turnOn(self):
 		toReturn = 1
-		if(self.sendCommandToBulb("1","set_power",["on",self.transitionType,500])[0] == "ok"):
+		if(self.sendCommandToBulb("1","set_power",["on",self.transitionType,self.transitionTime])[0] == "ok"):
 			toReturn = 0
 
 		return toReturn
 
 	def adjustBrightness(self,brightness):
-		self.sendCommandToBulb("1","set_bright",[int(brightness),self.transitionType,500])
+		self.sendCommandToBulb("1","set_bright",[int(brightness),self.transitionType,self.transitionTime])
 	
 	def adjustTemperature(self,temperature):
-		self.sendCommandToBulb("1","set_ct_abx",[int(temperature),self.transitionType,500])
+		self.sendCommandToBulb("1","set_ct_abx",[int(temperature),self.transitionType,self.transitionTime])
 	
 	def setColor(self,r,g,b):
 		colorToSend = (65536*r) + (256*g) + b
-		print(colorToSend)
-		self.sendCommandToBulb("1","set_rgb",[colorToSend,self.transitionType,500])
+		self.sendCommandToBulb("1","set_rgb",[colorToSend,self.transitionType,self.transitionTime])
 
 	def getCurrentIp(self):
 		return self.ipAddress[0]
 	
 	def getCurrentTransitionType(self):
-		return self.transitionType;
+		return self.transitionType
+	
+	def getCurrentTransitionTime(self):
+		return self.transitionTime

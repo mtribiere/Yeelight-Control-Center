@@ -3,6 +3,7 @@ import gi
 gi.require_version('Gtk','3.0')
 from gi.repository import Gtk
 from yeelight_lib import Bulb
+from theme_dialog import ThemeDialog
 from setting_dialog import SettingDialog
 import JSONutils as configFile
 
@@ -13,7 +14,7 @@ class Application(Gtk.Window):
 
 		#Setup bulb
 		config = configFile.loadConfig()
-		self.createBulb(config["ipAddress"],config["transitionType"])
+		self.createBulb(config["ipAddress"],config["transitionType"],config["transitionTime"])
 
 		#Setup GUI
 		self.set_icon_from_file("img/logo.ico")
@@ -74,6 +75,7 @@ class Application(Gtk.Window):
 
 		#Theme button
 		self.ButtonTheme = Gtk.Button(label="Themes")
+		self.ButtonTheme.connect("clicked",self.openTheme)
 		self.midBox.pack_start(self.ButtonTheme,False,True,0)
 
 		################# Bottom Box
@@ -130,14 +132,27 @@ class Application(Gtk.Window):
 		#Close the dialog
 		self.dialog.destroy()
 
+	def openTheme(self,widget):
+		
+		#Prepare dialog Box
+		themeDialog = ThemeDialog(self)
+		themeDialog.run()
+
+		#Destroy dialog Box
+		themeDialog.destroy()
+
+
 	def openSettings(self,widget):
 		
 		#Prepare dialogBox
-		settingDialog = SettingDialog(self,self.bulb.getCurrentIp(),self.bulb.getCurrentTransitionType())
+		settingDialog = SettingDialog(self,self.bulb.getCurrentIp(),
+										   self.bulb.getCurrentTransitionType(),
+										   self.bulb.getCurrentTransitionTime())
 		settingDialogResponse = settingDialog.run()
 		
 		#Handle the response
 		if(settingDialogResponse == Gtk.ResponseType.OK):
+
 			print("Interrupting communactions")
 			#Get the new transition
 			if(settingDialog.getTransitionType() == 0):
@@ -146,11 +161,11 @@ class Application(Gtk.Window):
 				newTransitionType = "smooth"
 
 			#Write the config
-			configFile.saveConfig(settingDialog.getIp(),newTransitionType)
+			configFile.saveConfig(settingDialog.getIp(),newTransitionType,settingDialog.getTransitionTime())
 
 			#Create new Bulb
 			self.bulb.disconnect()
-			self.createBulb(settingDialog.getIp(),newTransitionType)
+			self.createBulb(settingDialog.getIp(),newTransitionType,settingDialog.getTransitionTime())
 
 			#Connect to bulb
 			self.connectToBulb()
@@ -161,8 +176,8 @@ class Application(Gtk.Window):
 		#Destroy the dialog
 		settingDialog.destroy()
 	
-	def createBulb(self,ipAdress,transitionType):
-		self.bulb = Bulb(ipAdress,55443,transitionType)
+	def createBulb(self,ipAdress,transitionType,transitionTime):
+		self.bulb = Bulb(ipAdress,55443,transitionType,transitionTime)
 	
 	def connectToBulb(self):
 

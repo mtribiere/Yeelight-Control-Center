@@ -4,7 +4,7 @@ from gi.repository import Gtk
 
 class SettingDialog(Gtk.Dialog):
 
-	def __init__(self,parent,currentIp,currentTransitionType):
+	def __init__(self,parent,currentIp,currentTransitionType,currentTransitionTime):
 		Gtk.Dialog.__init__(self,"Settings",
 								parent,
 								0)
@@ -15,11 +15,14 @@ class SettingDialog(Gtk.Dialog):
 
 		#Fill informations
 		self.ipEntery.set_text(currentIp)
+
 		if(currentTransitionType == "sudden"):
 			self.transitionTypeCombo.set_active(0)
 		else:
 			self.transitionTypeCombo.set_active(1)
 		
+		self.transitionTimeSpin.set_value(currentTransitionTime)
+
 		self.show_all()
 
 	def createWidget(self):
@@ -59,6 +62,19 @@ class SettingDialog(Gtk.Dialog):
 
 		self.transitionTypeBox.pack_start(self.transitionTypeCombo,True,True,0)
 
+		#Transition Time Box
+		self.transitionTimeBox = Gtk.Box(orientation=Gtk.STYLE_CLASS_HORIZONTAL,spacing=2)
+		self.mainBox.add(self.transitionTimeBox)
+
+		self.transitionTimeLabel = Gtk.Label("Transition time : ")
+		
+		self.transitionTimeBox.pack_start(self.transitionTimeLabel,False,True,0)
+
+		self.spinAdjustment = Gtk.Adjustment(value = 500,lower=30,upper=10000,step_increment=100,page_increment=0,page_size=0)
+		self.transitionTimeSpin = Gtk.SpinButton(adjustment=self.spinAdjustment,climb_rate=100,digits=0)
+		
+		self.transitionTimeBox.pack_start(self.transitionTimeSpin,True,True,0)
+
 		# Seperator
 		self.seperator = Gtk.Separator(orientation=Gtk.STYLE_CLASS_HORIZONTAL)
 		self.mainBox.add(self.seperator)
@@ -77,3 +93,6 @@ class SettingDialog(Gtk.Dialog):
 	
 	def getTransitionType(self):
 		return self.transitionTypeCombo.get_active()
+	
+	def getTransitionTime(self):
+		return int(self.transitionTimeSpin.get_value()) 
