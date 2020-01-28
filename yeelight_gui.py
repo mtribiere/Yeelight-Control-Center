@@ -83,6 +83,7 @@ class Application(Gtk.Window):
 		self.mainBox.add(self.botBox)
 
 		#Temperature slider
+		#Designed with love by mtribiere
 		self.temperatureAdjustement = Gtk.Adjustment(value=4000,lower=1700,upper=6500,step_increment=5,page_increment=10,page_size=0)
 		self.TemperatureSlider = Gtk.Scale(orientation=Gtk.STYLE_CLASS_HORIZONTAL,adjustment=self.temperatureAdjustement)
 		self.TemperatureSlider.set_property("value-pos",1)
