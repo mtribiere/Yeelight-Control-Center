@@ -101,7 +101,7 @@ class Bulb:
 		
 
 		# Return the command result
-		print(chunks)
+		#print(chunks)
 		result = json.loads(chunks)["result"]
 		return result
 
@@ -131,6 +131,9 @@ class Bulb:
 	
 	def setColor(self,r,g,b):
 		colorToSend = (65536*r) + (256*g) + b
+		self.setColorInt(colorToSend)
+	
+	def setColorInt(self,colorToSend):
 		self.sendCommandToBulb("1","set_rgb",[colorToSend,self.transitionType,self.transitionTime])
 
 	def getCurrentIp(self):

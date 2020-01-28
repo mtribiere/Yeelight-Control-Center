@@ -57,6 +57,7 @@ class SettingDialog(Gtk.Dialog):
 		self.transitionTypeCombo = Gtk.ComboBox(model=transitionsModel)
 		cell = Gtk.CellRendererText()
 
+		self.transitionTypeCombo.connect("changed",self.onTransitionTypeChanged)
 		self.transitionTypeCombo.pack_start(cell,False)
 		self.transitionTypeCombo.add_attribute(cell,"text",0)
 
@@ -87,6 +88,14 @@ class SettingDialog(Gtk.Dialog):
 
 		#Ok button
 		self.add_buttons(Gtk.STOCK_OK,Gtk.ResponseType.OK)
+
+	def onTransitionTypeChanged(self,widget):
+
+		#If the selected transition type is sudden
+		if(self.transitionTypeCombo.get_active() == 0):
+			self.transitionTimeSpin.set_sensitive(False)
+		else:
+			self.transitionTimeSpin.set_sensitive(True)
 	
 	def getIp(self):
 		return self.ipEntery.get_text()

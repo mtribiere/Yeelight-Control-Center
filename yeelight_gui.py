@@ -135,8 +135,11 @@ class Application(Gtk.Window):
 	def openTheme(self,widget):
 		
 		#Prepare dialog Box
-		themeDialog = ThemeDialog(self)
+		themeDialog = ThemeDialog(self,self.bulb)
 		themeDialog.run()
+
+		#Update the cursors
+		self.updateCursors()
 
 		#Destroy dialog Box
 		themeDialog.destroy()
